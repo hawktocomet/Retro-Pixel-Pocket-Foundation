@@ -54,4 +54,38 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for development principles and [docs/PROJ
 
 ## License
 
-Licensing will be documented for original project contributions and each third-party component. Do not assume that the license of one component applies to the entire firmware.
+Original Foundation code is licensed under GNU GPL v3 or later. Third-party components retain their own licenses and attribution requirements. Do not assume that the license of one component applies to the entire firmware.
+
+## Battery interface
+
+The first reusable hardware interface is the C++ battery API in
+`include/retropixel/Battery.hpp`.
+
+The initial RK817 provider reads battery capacity, charging status, and
+external power state from the device's Linux sysfs interface. Its sysfs
+root can be supplied to the provider, allowing host-side tests to use
+temporary files instead of physical hardware.
+
+The API distinguishes unknown readings from confirmed states. Invalid or
+unavailable capacity data is not reported as zero, and external power is
+reported as disconnected only when both AC and USB status can be read and
+both report offline.
+
+### Build and test
+
+Requirements: CMake 3.16 or newer and a C++17 compiler.
+
+Configure and build:
+
+    cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+    cmake --build build --parallel
+
+Run tests:
+
+    ctest --test-dir build --output-on-failure
+
+The battery provider tests run on the host and do not require a Retro Pixel
+Pocket device.
+
+This is an initial interface and RK817 implementation, not yet a complete
+firmware build or a hardware-validated release.
