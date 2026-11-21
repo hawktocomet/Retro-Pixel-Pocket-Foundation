@@ -13,6 +13,17 @@ add_library(retropixel_battery
     src/platform/rk817/Rk817BatteryProvider.cpp
 )
 
+add_library(retropixel_device_identity
+    src/platform/linux/DeviceTreeIdentityProvider.cpp
+)
+
+target_include_directories(retropixel_device_identity
+    PUBLIC
+        ${CMAKE_CURRENT_SOURCE_DIR}/include
+)
+
+target_compile_features(retropixel_device_identity PUBLIC cxx_std_17)
+
 target_include_directories(retropixel_battery
     PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}/include
@@ -34,5 +45,18 @@ if(BUILD_TESTING)
     add_test(
         NAME battery_provider
         COMMAND retropixel_battery_tests
+    )
+
+    add_executable(retropixel_device_identity_tests
+        tests/DeviceIdentityProviderTests.cpp
+    )
+
+    target_link_libraries(retropixel_device_identity_tests
+        PRIVATE retropixel_device_identity
+    )
+
+    add_test(
+        NAME device_identity
+        COMMAND retropixel_device_identity_tests
     )
 endif()
