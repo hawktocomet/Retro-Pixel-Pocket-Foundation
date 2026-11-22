@@ -109,6 +109,43 @@ presence of an audio PCM device node does not prove that playback or
 capture works. It also does not test application permissions, sound
 quality, or actual hardware operation.
 
+## Linux input events
+
+Public API: `retropixel/Input.hpp`
+
+Linux provider:
+`retropixel/platform/linux/EvdevInputDevice.hpp`
+
+`EvdevInputDevice` reads raw Linux evdev events from one configurable
+input-device path. It does not map events to frontend-specific buttons
+or start a background service.
+
+The device is opened read-only and nonblocking. `read()` returns one of
+these statuses:
+
+- `EventAvailable`: one raw event was read.
+- `NoEventAvailable`: no event is currently waiting.
+- `Closed`: the device is not open or the input source reached EOF.
+- `Error`: the read failed; an error code describes the failure.
+
+Each event includes its Linux event type, code, value, and timestamp.
+
+`InputDevice::info()` reports metadata with separate validity flags,
+including the device name, hardware bus/vendor/product/version IDs,
+event types, key codes, absolute and relative axes, and force-feedback
+capability. Unsupported or unavailable metadata does not prevent the
+device from opening.
+
+The provider uses Linux evdev (`/dev/input/event*`), not the legacy
+joystick interface (`/dev/input/js*`). Access is subject to normal
+device-node permissions; the application must have permission to read
+the selected device.
+
+Host-side tests exercise event translation, open/close behavior, and
+unavailable metadata using a regular file as a simulated event source.
+Live-device behavior and nonblocking reads still require testing on the
+handheld.
+
 ## Hardware observations
 
 The following interfaces were observed on the inspected handheld running
@@ -130,7 +167,7 @@ devices. Actual playback and capture still require functional testing.
 
 ## Verification
 
-The providers have host-side tests using simulated filesystem trees. They cover successful reads, missing interfaces, malformed values, and unknown states.
+The providers have host-side tests using simulated filesystem trees and regular files. They cover successful reads, event translation, missing interfaces, malformed values, and unknown states.
 
 Configure, build, and run the tests:
 
@@ -147,7 +184,7 @@ Passing host-side tests verifies provider behavior against simulated inputs. It 
 These interfaces do not currently provide:
 
 - Display rendering or mode setting.
-- Gamepad event reading or button mapping.
+- Frontend-specific gamepad button mapping.
 - Audio playback, recording, or volume control.
 - Storage discovery or mount management.
 - Power-button event handling or suspend/resume control.

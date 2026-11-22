@@ -84,3 +84,29 @@ if(BUILD_TESTING)
         COMMAND retropixel_device_capabilities_tests
     )
 endif()
+
+add_library(retropixel_input
+    src/platform/linux/EvdevInputDevice.cpp
+)
+
+target_include_directories(retropixel_input
+    PUBLIC
+        ${CMAKE_CURRENT_SOURCE_DIR}/include
+)
+
+target_compile_features(retropixel_input PUBLIC cxx_std_17)
+
+if(BUILD_TESTING)
+    add_executable(retropixel_input_tests
+        tests/InputDeviceTests.cpp
+    )
+
+    target_link_libraries(retropixel_input_tests
+        PRIVATE retropixel_input
+    )
+
+    add_test(
+        NAME input_device
+        COMMAND retropixel_input_tests
+    )
+endif()
