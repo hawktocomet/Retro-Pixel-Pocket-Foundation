@@ -110,3 +110,34 @@ if(BUILD_TESTING)
         COMMAND retropixel_input_tests
     )
 endif()
+
+find_package(ALSA REQUIRED)
+
+add_library(retropixel_audio
+    src/platform/linux/AlsaAudioOutput.cpp
+)
+
+target_include_directories(retropixel_audio
+    PUBLIC
+        ${CMAKE_CURRENT_SOURCE_DIR}/include
+    PRIVATE
+        ${ALSA_INCLUDE_DIRS}
+)
+
+target_compile_features(retropixel_audio PUBLIC cxx_std_17)
+target_link_libraries(retropixel_audio PRIVATE ${ALSA_LIBRARIES})
+
+if(BUILD_TESTING)
+    add_executable(retropixel_audio_tests
+        tests/AudioOutputTests.cpp
+    )
+
+    target_link_libraries(retropixel_audio_tests
+        PRIVATE retropixel_audio
+    )
+
+    add_test(
+        NAME audio_output
+        COMMAND retropixel_audio_tests
+    )
+endif()

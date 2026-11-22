@@ -146,6 +146,48 @@ unavailable metadata using a regular file as a simulated event source.
 Live-device behavior and nonblocking reads still require testing on the
 handheld.
 
+## Audio output
+
+Public API: `retropixel/Audio.hpp`
+
+Linux provider:
+`retropixel/platform/linux/AlsaAudioOutput.hpp`
+
+`AudioOutput` provides synchronous interleaved PCM playback through
+`open()`, `write()`, and `close()`.
+
+`AudioConfiguration` selects the ALSA device name, sample format,
+sample rate, and channel count. The default device name is `default`,
+allowing ALSA's system configuration to select the output device.
+Applications and tests can specify another ALSA device, such as
+`null`.
+
+Supported sample formats are:
+
+- `Signed16LittleEndian`: signed 16-bit little-endian PCM.
+- `Signed24LittleEndian`: signed 24-bit samples in a 32-bit little-endian
+  container (`S24_LE`).
+- `Signed32LittleEndian`: signed 32-bit little-endian PCM.
+
+Audio frames are interleaved. `write()` reports both the number of
+frames written and an error code, allowing callers to account for
+partial progress. The ALSA provider handles recoverable playback
+underruns and reports unrecoverable errors.
+
+The provider uses ALSA's PCM API and keeps ALSA types out of the public
+interface. Building it requires the ALSA development headers and
+library; the target device requires the ALSA runtime library.
+
+Host-side tests use ALSA's `null` PCM device to exercise opening,
+writing, format selection, validation, and closing without requiring
+speakers or physical audio hardware. These tests do not verify playback
+through the handheld's RK817 codec or speakers.
+
+The provider does not implement recording, mixer controls, volume
+policy, audio mixing, or background playback services. Applications
+remain responsible for selecting appropriate audio settings and
+managing playback.
+
 ## Hardware observations
 
 The following interfaces were observed on the inspected handheld running
@@ -167,7 +209,7 @@ devices. Actual playback and capture still require functional testing.
 
 ## Verification
 
-The providers have host-side tests using simulated filesystem trees and regular files. They cover successful reads, event translation, missing interfaces, malformed values, and unknown states.
+The providers have host-side tests using simulated filesystem trees, regular files, and the ALSA null PCM device. They cover successful reads and writes, event translation, format selection, missing interfaces, malformed values, and unknown states.
 
 Configure, build, and run the tests:
 
@@ -185,7 +227,7 @@ These interfaces do not currently provide:
 
 - Display rendering or mode setting.
 - Frontend-specific gamepad button mapping.
-- Audio playback, recording, or volume control.
+- Audio recording or volume control.
 - Storage discovery or mount management.
 - Power-button event handling or suspend/resume control.
 - A background service, IPC protocol, or frontend-specific behavior.
