@@ -188,6 +188,29 @@ policy, audio mixing, or background playback services. Applications
 remain responsible for selecting appropriate audio settings and
 managing playback.
 
+## Display information
+
+Public API: `retropixel/Display.hpp`
+
+Linux provider:
+`retropixel/platform/linux/LinuxFramebufferDisplay.hpp`
+
+`DisplayProvider::read()` reports framebuffer display metadata without
+drawing pixels or changing display modes. The result includes:
+
+- Visible and virtual display dimensions.
+- Bits per pixel.
+- Red, green, blue, and transparency channel lengths and bit offsets.
+- Framebuffer line length and memory size in bytes.
+
+The Linux provider uses the framebuffer device interface and defaults to
+`/dev/fb0`. Its device path can be overridden. Failed reads return an
+error and leave the caller's previous `DisplayInfo` unchanged.
+
+The provider reads metadata using Linux framebuffer ioctls. Host-side
+tests cover unavailable devices and failure behavior; actual metadata
+must still be validated on the target handheld.
+
 ## Hardware observations
 
 The following interfaces were observed on the inspected handheld running
@@ -201,7 +224,7 @@ not guarantees for every hardware revision or firmware version.
 | Battery | `/sys/class/power_supply/battery` |
 | External power | `/sys/class/power_supply/ac` and `/sys/class/power_supply/usb` |
 | Input | `GO-Super Gamepad`, joystick `js0`, and power-key input |
-| Display | `/dev/fb0`, 720 × 720, 32 bits per pixel |
+| Display | `/dev/fb0`, 720 × 720, 32 bits per pixel; RGB888 in a 32-bit pixel (`red 8/16`, `green 8/8`, `blue 8/0`) |
 | Audio | RK817 codec; ALSA playback and capture PCM device nodes |
 
 The observed audio interfaces establish that the kernel exposes audio
@@ -209,7 +232,7 @@ devices. Actual playback and capture still require functional testing.
 
 ## Verification
 
-The providers have host-side tests using simulated filesystem trees, regular files, and the ALSA null PCM device. They cover successful reads and writes, event translation, format selection, missing interfaces, malformed values, and unknown states.
+The providers have host-side tests using simulated filesystem trees, regular files, and the ALSA null PCM device. They cover successful reads and writes, event translation, format selection, missing interfaces, malformed values, unknown states, and framebuffer display-provider failure behavior.
 
 Configure, build, and run the tests:
 

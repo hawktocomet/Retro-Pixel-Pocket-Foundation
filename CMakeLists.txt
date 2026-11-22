@@ -141,3 +141,29 @@ if(BUILD_TESTING)
         COMMAND retropixel_audio_tests
     )
 endif()
+
+add_library(retropixel_display
+    src/platform/linux/LinuxFramebufferDisplay.cpp
+)
+
+target_include_directories(retropixel_display
+    PUBLIC
+        ${CMAKE_CURRENT_SOURCE_DIR}/include
+)
+
+target_compile_features(retropixel_display PUBLIC cxx_std_17)
+
+if(BUILD_TESTING)
+    add_executable(retropixel_display_tests
+        tests/DisplayProviderTests.cpp
+    )
+
+    target_link_libraries(retropixel_display_tests
+        PRIVATE retropixel_display
+    )
+
+    add_test(
+        NAME display_provider
+        COMMAND retropixel_display_tests
+    )
+endif()
