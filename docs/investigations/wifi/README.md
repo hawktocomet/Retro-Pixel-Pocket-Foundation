@@ -43,3 +43,7 @@ hardware, Linux drivers, USB, networking, and system power management.
 
 - [2026-11-24 baseline](2026-11-24-baseline.md)
 - [Test log template](TEST-LOG-TEMPLATE.md)
+
+## Findings
+
+- [Wi-Fi latency investigation findings](2026-11-24-latency-findings.md)
